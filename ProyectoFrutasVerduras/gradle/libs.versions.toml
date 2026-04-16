@@ -7,6 +7,8 @@ androidx-activity = "1.12.2"
 androidx-lifecycle = "2.9.6"
 composeMultiplatform = "1.10.0"
 kotlin = "2.3.0"
+ktorClientAndroid = "2.3.7"
+ktorClientContentNegotiation = "2.3.12"
 materialIconsCore = "1.7.0"
 material3 = "1.4.0"
 moko-resources = "0.23.0"
@@ -33,6 +35,10 @@ compose-material-icons-core = { module = "androidx.compose.material:material-ico
 compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsCore" }
 
 # Moko Resources - AÑADIDO
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorClientAndroid" }
+ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClientAndroid" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorClientContentNegotiation" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientContentNegotiation" }
 moko-resources = { module = "dev.icerock.moko:resources", version.ref = "moko-resources" }
 moko-resources-compose = { module = "dev.icerock.moko:resources-compose", version.ref = "moko-resources" }
 

@@ -22,14 +22,21 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import org.proyecto.project.model.LoginResponse
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun LoginScreen(
-    onLoginClick: (email: String, password: String) -> Unit = { _, _ -> },
-    onBackClick: () -> Unit,
+    onBackClick: () -> Unit,           // ya no necesitas onLoginClick
     onNavigateToHome: () -> Unit = {}
 ) {
     var visible by remember { mutableStateOf(false) }
@@ -37,30 +44,45 @@ fun LoginScreen(
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var loading by remember { mutableStateOf(false) }
 
-    // Entrada automática al aparecer la pantalla
+    val scope = rememberCoroutineScope()
+
+    // Cliente Ktor (creado una sola vez)
+    val client = remember {
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                json(Json {
+                    prettyPrint = true
+                    isLenient = true
+                    ignoreUnknownKeys = true
+                    coerceInputValues = true
+                })
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         delay(200)
         visible = true
     }
 
-    // Animación de salida (exactamente igual a PresentationScreen)
     val screenAlpha by animateFloatAsState(
         targetValue = if (exiting) 0f else 1f,
-        animationSpec = tween(1200),  // duración igual a la presentación
-        label = ""
-    )
-
-    val screenScale by animateFloatAsState(
-        targetValue = if (exiting) 0.95f else 1f,  // misma reducción de escala
         animationSpec = tween(1200),
         label = ""
     )
 
-    // Cuando se activa exiting → esperar que termine la animación y navegar
+    val screenScale by animateFloatAsState(
+        targetValue = if (exiting) 0.95f else 1f,
+        animationSpec = tween(1200),
+        label = ""
+    )
+
     LaunchedEffect(exiting) {
         if (exiting) {
-            delay(1300)  // un poco más que la animación para que se vea completa
+            delay(1300)
             onNavigateToHome()
         }
     }
@@ -74,42 +96,24 @@ fun LoginScreen(
                 scaleY = screenScale
             }
             .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF5CFF5C),
-                        Color(0xFF063D06)
-                    )
-                )
+                Brush.verticalGradient(listOf(Color(0xFF5CFF5C), Color(0xFF063D06)))
             ),
         contentAlignment = Alignment.Center
     ) {
 
         AnimatedVisibility(
             visible = visible,
-            enter = fadeIn(animationSpec = tween(700)) +
-                    slideInVertically(
-                        initialOffsetY = { it / 2 },
-                        animationSpec = tween(700)
-                    )
+            enter = fadeIn(tween(700)) + slideInVertically(initialOffsetY = { it / 2 },
+                animationSpec = tween(700)
+            )
         ) {
 
             Box(
                 modifier = Modifier
                     .padding(24.dp)
                     .clip(RoundedCornerShape(36.dp))
-                    .background(
-                        Color.White.copy(alpha = 0.28f)
-                    )
-                    .border(
-                        width = 1.5.dp,
-                        brush = Brush.linearGradient(
-                            listOf(
-                                Color.White.copy(alpha = 0.9f),
-                                Color.White.copy(alpha = 0.4f)
-                            )
-                        ),
-                        shape = RoundedCornerShape(36.dp)
-                    )
+                    .background(Color.White.copy(alpha = 0.28f))
+                    .border(1.5.dp, Brush.linearGradient(listOf(Color.White.copy(0.9f), Color.White.copy(0.4f))), RoundedCornerShape(36.dp))
                     .padding(40.dp)
             ) {
 
@@ -118,133 +122,111 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    Text(
-                        text = "FreshSeason",
-                        fontSize = 38.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp,
-                        color = Color.White,
-                        fontFamily = InterFont()
-                    )
+                    Text("FreshSeason", fontSize = 38.sp, fontWeight = FontWeight.Bold, color = Color.White, fontFamily = InterFont())
+                    Spacer(Modifier.height(12.dp))
+                    Text("Inicia sesión para continuar", fontSize = 18.sp, fontWeight = FontWeight.Medium, color = Color.White.copy(0.95f), fontFamily = InterFont())
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(Modifier.height(36.dp))
 
-                    Text(
-                        text = "Inicia sesión para continuar",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
-                        color = Color.White.copy(alpha = 0.95f),
-                        fontFamily = InterFont()
-                    )
-
-                    Spacer(modifier = Modifier.height(36.dp))
-
-                    // Campo Email
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
                         label = { Text("Correo electrónico") },
-                        singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White.copy(alpha = 0.9f),
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                            focusedLabelColor = Color.White,
-                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
-                            cursorColor = Color.White,
+                            focusedBorderColor = Color.White.copy(0.9f),
+                            unfocusedBorderColor = Color.White.copy(0.5f),
                             focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White.copy(alpha = 0.9f),
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
+                            cursorColor = Color.White
                         ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
+                        enabled = !loading
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(Modifier.height(20.dp))
 
-                    // Campo Contraseña
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
                         label = { Text("Contraseña") },
-                        singleLine = true,
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color.White.copy(alpha = 0.9f),
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
-                            focusedLabelColor = Color.White,
-                            unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
-                            cursorColor = Color.White,
+                            focusedBorderColor = Color.White.copy(0.9f),
+                            unfocusedBorderColor = Color.White.copy(0.5f),
                             focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White.copy(alpha = 0.9f),
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
+                            cursorColor = Color.White
                         ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
+                        enabled = !loading
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(Modifier.height(40.dp))
 
-                    Text(
-                        text = "¿Olvidaste tu contraseña?",
-                        fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.75f),
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .clickable { /* TODO */ }
-                    )
-
-                    Spacer(modifier = Modifier.height(40.dp))
-
-                    ModernButton(
-                        text = "Iniciar Sesión",
+                    Button(
                         onClick = {
-                            // Activar la animación de salida (igual que en PresentationScreen)
-                            exiting = true
-                        }
-                    )
+                            scope.launch {
+                                if (email.isBlank() || password.isBlank()) {
+                                    errorMessage = "Completa todos los campos"
+                                    return@launch
+                                }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                                loading = true
+                                errorMessage = null
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                                try {
+                                    val response: LoginResponse = client.get(
+                                        "http://10.0.2.2/freshseason_api/login.php?email=$email&contrasena=$password"
+                                    ).body()
+
+                                    println("=== LOGIN RESPONSE ===")
+                                    println("success: ${response.success}")
+                                    println("user: ${response.user}")
+
+                                    if (response.success) {
+                                        exiting = true
+                                    } else {
+                                        errorMessage = response.message ?: "Correo o contraseña incorrectos"
+                                    }
+
+                                } catch (e: Exception) {
+                                    println("❌ Error en login: ${e.message}")
+                                    errorMessage = "Error de conexión. Verifica tu internet."
+                                } finally {
+                                    loading = false
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !loading
                     ) {
-                        Text(
-                            text = "¿No tienes cuenta? ",
-                            fontSize = 15.sp,
-                            color = Color.White.copy(alpha = 0.85f)
-                        )
-                        Text(
-                            text = "Regístrate",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White,
-                            modifier = Modifier.clickable { /* TODO */ }
-                        )
+                        if (loading) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
+                        } else {
+                            Text("Iniciar Sesión")
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(Modifier.height(12.dp))
+
+                    errorMessage?.let {
+                        Text(it, color = Color.Red, fontSize = 14.sp, textAlign = TextAlign.Center)
+                    }
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Row(horizontalArrangement = Arrangement.Center) {
+                        Text("¿No tienes cuenta? ", color = Color.White.copy(0.85f))
+                        Text("Regístrate", color = Color.White, fontWeight = FontWeight.SemiBold, modifier = Modifier.clickable { })
+                    }
+
+                    Spacer(Modifier.height(16.dp))
 
                     Text(
                         text = "Volver",
-                        fontSize = 15.sp,
-                        color = Color.White.copy(alpha = 0.7f),
-                        modifier = Modifier.clickable {
-                            exiting = true
-                        }
+                        color = Color.White.copy(0.7f),
+                        modifier = Modifier.clickable { exiting = true }
                     )
-
-                    if (exiting) {
-                        // El LaunchedEffect de arriba ya maneja la navegación
-                        // Este if no es necesario para navegación, pero lo dejamos por si quieres agregar algo más
-                    }
                 }
             }
         }

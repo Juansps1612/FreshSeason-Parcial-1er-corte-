@@ -1,51 +1,28 @@
 package org.proyecto.project
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlin.random.Random
 
 // -------------------- MODELO DE DATOS --------------------
-data class EstadisticaPerfil(
-    val titulo: String,
-    val valor: String,
-    val icono: Int,
-    val color: Color
-)
-
-data class Logro(
-    val nombre: String,
-    val descripcion: String,
-    val icono: String,
-    val desbloqueado: Boolean,
-    val progreso: Int = 100
-)
-
 data class OpcionConfiguracion(
     val titulo: String,
     val icono: Int,
@@ -58,15 +35,8 @@ data class OpcionConfiguracion(
 @Composable
 fun PerfilScreen() {
 
-    var notificacionesActivadas by remember { mutableStateOf(true) }
-    var modoOscuro by remember { mutableStateOf(false) }
-    var opcionesConfig = remember {
+    val opcionesConfig = remember {
         listOf(
-            OpcionConfiguracion("Editar perfil", R.drawable.editar_usuario, "editar"),
-            OpcionConfiguracion("Notificaciones", R.drawable.campana, esSwitch = true, valorSwitch = true),
-            OpcionConfiguracion("Idioma", R.drawable.idioma, "idioma"),
-            OpcionConfiguracion("Tema oscuro", R.drawable.luna, esSwitch = true, valorSwitch = false),
-            OpcionConfiguracion("Ayuda", R.drawable.ayuda, "ayuda"),
             OpcionConfiguracion("Cerrar sesión", R.drawable.salir, "logout")
         ).toMutableStateList()
     }
@@ -88,32 +58,9 @@ fun PerfilScreen() {
                 PerfilPrincipalCard()
             }
 
-            // Estadísticas rápidas
+            // Información básica
             item {
-                Text(
-                    text = "📊 Mis estadísticas",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-
-                EstadisticasPerfilGrid()
-            }
-
-            // Logros recientes
-            item {
-                Text(
-                    text = "🏆 Logros obtenidos",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
-            }
-
-            items(logrosEjemplo) { logro ->
-                LogroCard(logro = logro)
+                InfoBasicaCard()
             }
 
             // Configuración
@@ -147,7 +94,6 @@ fun PerfilScreen() {
 // -------------------- TARJETA DE PERFIL PRINCIPAL --------------------
 @Composable
 fun PerfilPrincipalCard() {
-    // Generar iniciales aleatorias para el ejemplo
     val iniciales = remember { "US" }
     val colorAvatar = remember { Color(0xFF4CAF50) }
 
@@ -281,61 +227,20 @@ fun PerfilPrincipalCard() {
     }
 }
 
-// -------------------- GRID DE ESTADÍSTICAS DE PERFIL --------------------
+// -------------------- TARJETA DE INFORMACIÓN BÁSICA --------------------
 @Composable
-fun EstadisticasPerfilGrid() {
-    val estadisticas = listOf(
-        EstadisticaPerfil("Días activo", "127", R.drawable.calendario, Color(0xFFFFA726)),
-        EstadisticaPerfil("Favoritos", "24", R.drawable.favorito, Color(0xFFEF5350)),
-        EstadisticaPerfil("Búsquedas", "89", R.drawable.lupa, Color(0xFF66BB6A)),
-        EstadisticaPerfil("Recetas", "12", R.drawable.receta, Color(0xFF42A5F5))
-    )
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Primera fila
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                EstadisticaPerfilCard(estadistica = estadisticas[0])
-            }
-            Box(modifier = Modifier.weight(1f)) {
-                EstadisticaPerfilCard(estadistica = estadisticas[1])
-            }
-        }
-
-        // Segunda fila
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                EstadisticaPerfilCard(estadistica = estadisticas[2])
-            }
-            Box(modifier = Modifier.weight(1f)) {
-                EstadisticaPerfilCard(estadistica = estadisticas[3])
-            }
-        }
-    }
-}
-
-// -------------------- TARJETA DE ESTADÍSTICA DE PERFIL --------------------
-@Composable
-fun EstadisticaPerfilCard(estadistica: EstadisticaPerfil) {
+fun InfoBasicaCard() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(24.dp))
                 .background(
                     Brush.verticalGradient(
                         listOf(
@@ -345,152 +250,71 @@ fun EstadisticaPerfilCard(estadistica: EstadisticaPerfil) {
                     )
                 )
                 .border(
-                    1.5.dp,
+                    2.dp,
                     Brush.linearGradient(
                         listOf(
                             Color.White.copy(alpha = 0.9f),
                             Color.White.copy(alpha = 0.4f)
                         )
                     ),
-                    RoundedCornerShape(16.dp)
+                    RoundedCornerShape(24.dp)
                 )
-                .padding(12.dp)
+                .padding(20.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                // Icono
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(estadistica.color.copy(alpha = 0.2f))
-                        .border(
-                            1.dp,
-                            estadistica.color.copy(alpha = 0.3f),
-                            RoundedCornerShape(8.dp)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
+                // Favoritos
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
-                        painter = painterResource(id = estadistica.icono),
+                        painter = painterResource(id = R.drawable.favorito),
                         contentDescription = null,
-                        tint = estadistica.color,
-                        modifier = Modifier.size(18.dp)
+                        tint = Color(0xFFEF5350),
+                        modifier = Modifier.size(24.dp)
                     )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // Texto
-                Column {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = estadistica.valor,
-                        fontSize = 16.sp,
+                        text = "24",
+                        fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
                     Text(
-                        text = estadistica.titulo,
-                        fontSize = 10.sp,
-                        color = Color.White.copy(alpha = 0.6f)
-                    )
-                }
-            }
-        }
-    }
-}
-
-// -------------------- TARJETA DE LOGRO --------------------
-@Composable
-fun LogroCard(logro: Logro) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.28f),
-                            Color.White.copy(alpha = 0.18f)
-                        )
-                    )
-                )
-                .border(
-                    1.5.dp,
-                    Brush.linearGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.9f),
-                            Color.White.copy(alpha = 0.4f)
-                        )
-                    ),
-                    RoundedCornerShape(16.dp)
-                )
-                .padding(12.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Icono del logro
-                Text(
-                    text = logro.icono,
-                    fontSize = 32.sp,
-                    modifier = Modifier.padding(end = 12.dp)
-                )
-
-                // Información
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = logro.nombre,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Text(
-                        text = logro.descripcion,
+                        text = "Favoritos",
                         fontSize = 12.sp,
                         color = Color.White.copy(alpha = 0.7f)
                     )
                 }
 
-                // Indicador de desbloqueado
+                // Divisor vertical
                 Box(
                     modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (logro.desbloqueado)
-                                Color(0xFF4CAF50).copy(alpha = 0.3f)
-                            else
-                                Color.White.copy(alpha = 0.1f)
-                        )
-                        .border(
-                            1.dp,
-                            if (logro.desbloqueado)
-                                Color(0xFF4CAF50)
-                            else
-                                Color.White.copy(alpha = 0.2f),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    if (logro.desbloqueado) {
-                        Text(
-                            text = "✓",
-                            color = Color(0xFF4CAF50),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                        .width(1.dp)
+                        .height(60.dp)
+                        .background(Color.White.copy(alpha = 0.2f))
+                )
+
+                // Miembro desde
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.calendario),
+                        contentDescription = null,
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Mar 2026",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "Miembro desde",
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
                 }
             }
         }
@@ -503,8 +327,6 @@ fun ConfiguracionItem(
     opcion: OpcionConfiguracion,
     onSwitchChanged: (Boolean) -> Unit
 ) {
-    var switchState by remember { mutableStateOf(opcion.valorSwitch) }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -571,62 +393,7 @@ fun ConfiguracionItem(
                     color = Color.White,
                     modifier = Modifier.weight(1f)
                 )
-
-                // Switch o flecha
-                if (opcion.esSwitch) {
-                    Switch(
-                        checked = switchState,
-                        onCheckedChange = {
-                            switchState = it
-                            onSwitchChanged(it)
-                        },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = Color(0xFF4CAF50),
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = Color.White.copy(alpha = 0.3f)
-                        )
-                    )
-                } else {
-                    if (opcion.titulo != "Cerrar sesión") {
-                        Text(
-                            text = "→",
-                            fontSize = 18.sp,
-                            color = Color.White.copy(alpha = 0.5f)
-                        )
-                    }
-                }
             }
         }
     }
 }
-
-// -------------------- DATOS DE EJEMPLO --------------------
-val logrosEjemplo = listOf(
-    Logro(
-        "Explorador estacional",
-        "Probaste frutas de todas las temporadas",
-        "🌍",
-        true
-    ),
-    Logro(
-        "Amante de las verduras",
-        "Añadiste 10 verduras a favoritos",
-        "🥦",
-        true
-    ),
-    Logro(
-        "Saludable",
-        "Completaste 30 días de racha",
-        "💚",
-        false,
-        60
-    ),
-    Logro(
-        "Master en búsquedas",
-        "Realizaste 100 búsquedas",
-        "🔍",
-        false,
-        45
-    )
-)

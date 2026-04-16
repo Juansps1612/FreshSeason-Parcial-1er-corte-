@@ -1,53 +1,67 @@
 package org.proyecto.project
 
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import org.proyecto.project.model.LoginResponse
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
 
 @Composable
 fun App() {
+
     var currentScreen by remember { mutableStateOf("presentation") }
+
+    // Cliente HTTP configurado correctamente
+    val client = remember {
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                json(Json {
+                    prettyPrint = true
+                    isLenient = true
+                    ignoreUnknownKeys = true
+                    coerceInputValues = true
+                })
+            }
+        }
+    }
 
     MaterialTheme {
         when (currentScreen) {
+
             "presentation" -> PresentationScreen(
                 onStartClick = {
-                    currentScreen = "login" // primero va a login
+                    currentScreen = "login"
                 }
             )
 
             "login" -> LoginScreen(
-                onLoginClick = { _, _ -> /* ignorado por ahora */ },
+                // Ya no pasamos onLoginClick
                 onBackClick = {
                     currentScreen = "presentation"
                 },
                 onNavigateToHome = {
-                    // 👇 este callback se ejecuta DESPUÉS de la animación de salida en LoginScreen
                     currentScreen = "home"
                 }
             )
 
             "home" -> HomeScreen()
 
-            else -> Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Pantalla no implementada",
-                    style = MaterialTheme.typography.headlineMedium
-                )
+            else -> {
+                androidx.compose.foundation.layout.Box(
+                    modifier = androidx.compose.ui.Modifier.fillMaxSize(),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    androidx.compose.material3.Text(
+                        text = "Pantalla no implementada",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                }
             }
         }
     }

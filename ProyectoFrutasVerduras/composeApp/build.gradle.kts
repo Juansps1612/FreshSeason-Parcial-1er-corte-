@@ -19,6 +19,10 @@ kotlin {
                 implementation(libs.compose.ui)
                 implementation(libs.compose.components.resources)
                 implementation(libs.compose.uiToolingPreview)
+                implementation(libs.ktor.client.android)
+                implementation(libs.ktor.client.cio)
+                implementation(libs.ktor.client.content.negotiation)  // o la versión que estés usando de Ktor
+                implementation(libs.ktor.serialization.kotlinx.json)
 
                 // AndroidX solo va en androidMain → BORRADO
                 // implementation(libs.androidx.material3)
