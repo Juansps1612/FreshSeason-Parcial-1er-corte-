@@ -66,6 +66,12 @@ fun HomeScreen(
     var editandoPerfil by remember { mutableStateOf(false) }
     var recetaDesplegada by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        if (SessionManager.userId != 0) {
+            favoritosViewModel.cargarFavoritos()
+        }
+    }
+
     val consejoActual = remember(selectedItem) {
         if (selectedItem == 0) {
             consejos[Random.nextInt(consejos.size)]
@@ -197,7 +203,8 @@ fun HomeScreen(
                 } else {
                     PerfilScreen(
                         onLogout = onLogout,
-                        onEditClick = { editandoPerfil = true }
+                        onEditClick = { editandoPerfil = true },
+                        totalFavoritos = favoritosViewModel.favoritos.size
                     )
                 }
             } else {
@@ -276,7 +283,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 24.dp),
+                .padding(start = 12.dp, end = 12.dp, bottom = 24.dp),
             contentAlignment = Alignment.BottomCenter
         ) {
             FloatingBottomBarLoginStyle(
@@ -436,7 +443,7 @@ fun FloatingBottomBarLoginStyle(
 ) {
     Box(
         modifier = Modifier
-            .wrapContentWidth()
+            .fillMaxWidth()
             .height(80.dp)
             .shadow(
                 elevation = 18.dp,
@@ -465,6 +472,7 @@ fun FloatingBottomBarLoginStyle(
         contentAlignment = Alignment.Center
     ) {
         Row(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -473,19 +481,23 @@ fun FloatingBottomBarLoginStyle(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .padding(horizontal = 12.dp)
+                        .weight(1f)
+                        .padding(horizontal = 2.dp)
                         .clickable { onItemSelected(index) }
                 ) {
                     PlatformIcon(item.icon, isSelected)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = item.label,
-                        fontSize = 12.sp,
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        textAlign = TextAlign.Center,
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                         color = if (isSelected)
                             Color(0xFF6EC6FF)
                         else
-                            Color.White.copy(alpha = 0.75f)
+                            Color.White.copy(alpha = 0.75f),
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             }

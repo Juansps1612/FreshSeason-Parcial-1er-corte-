@@ -2,6 +2,7 @@ package org.proyecto.project.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class LoginResponse(
@@ -12,6 +13,7 @@ data class LoginResponse(
 
 @Serializable
 data class Usuario(
+    @JsonNames("usuario_id", "user_id", "ID")
     val id: Int? = null,
     val nombre: String? = null,
     val email: String? = null,

@@ -15,6 +15,7 @@ object SessionManager {
         email = ""
         membresia = ""
         fechaRegistro = ""
+        totalFavoritos = 0
     }
 
     fun estaLogueado() = userId != 0

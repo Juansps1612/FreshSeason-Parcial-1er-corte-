@@ -23,14 +23,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-
 // Importar ProductoPerfilScreen desde BuscarScreen
 import org.proyecto.project.ProductoPerfilScreen
 
 @Composable
 fun FavoritosScreen(
-    favoritosViewModel: FavoritosViewModel = viewModel()
+    favoritosViewModel: FavoritosViewModel
 ) {
     val favoritos = favoritosViewModel.favoritos
     var productoSeleccionado by remember { mutableStateOf<ProductoBusqueda?>(null) }

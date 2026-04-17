@@ -24,7 +24,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -42,7 +41,7 @@ import org.proyecto.project.model.LoginResponse
 fun LoginScreen(
     onBackClick: () -> Unit,
     onNavigateToHome: () -> Unit = {},
-    favoritosViewModel: FavoritosViewModel = viewModel()
+    favoritosViewModel: FavoritosViewModel
 ) {
     var visible by remember { mutableStateOf(false) }
     var exiting by remember { mutableStateOf(false) }
@@ -191,17 +190,22 @@ fun LoginScreen(
                                         ).body()
 
                                         if (response.success) {
-                                            response.user?.let { user ->
-                                                // Guardamos los datos en la sesión local
-                                                favoritosViewModel.setUser(user.id ?: 0)
-                                                SessionManager.nombre = user.nombre ?: ""
-                                                SessionManager.email = user.email ?: ""
-                                                SessionManager.membresia = user.membresia ?: "Free"
-                                                SessionManager.fechaRegistro = user.fechaRegistro.toString()
-
-                                                // CARGAMOS FAVORITOS DESDE LA DB
-
+                                            val user = response.user
+                                            if (user == null) {
+                                                errorMessage = "Respuesta de login sin datos de usuario"
+                                                return@launch
                                             }
+                                            val uid = user.id ?: 0
+                                            if (uid == 0) {
+                                                errorMessage =
+                                                    "El servidor no envió un id de usuario válido (revisa login.php / JSON)."
+                                                return@launch
+                                            }
+                                            favoritosViewModel.setUser(uid)
+                                            SessionManager.nombre = user.nombre ?: ""
+                                            SessionManager.email = user.email ?: ""
+                                            SessionManager.membresia = user.membresia ?: "Free"
+                                            SessionManager.fechaRegistro = user.fechaRegistro.toString()
                                             exiting = true
                                         } else {
                                             errorMessage = response.message ?: "Correo o contraseña incorrectos"

@@ -28,7 +28,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -36,7 +35,7 @@ import java.util.Calendar
 // -------------------- BUSCAR SCREEN --------------------
 @Composable
 fun BuscarScreen(
-    favoritosViewModel: FavoritosViewModel = viewModel()
+    favoritosViewModel: FavoritosViewModel
 ) {
 
     var searchText by remember { mutableStateOf("") }
@@ -499,10 +498,10 @@ fun ProductoPerfilScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Box(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp)
+                            .defaultMinSize(minHeight = 52.dp)
                             .clip(RoundedCornerShape(28.dp))
                             .background(
                                 if (isFavorito) {
@@ -521,46 +520,42 @@ fun ProductoPerfilScreen(
                                     )
                                 }
                             )
-                            .border(
-                                1.5.dp,
-                                if (isFavorito) {
-                                    Brush.verticalGradient(
-                                        listOf(Color.Transparent, Color.Transparent)
+                            .then(
+                                if (!isFavorito) {
+                                    Modifier.border(
+                                        1.5.dp,
+                                        Brush.linearGradient(
+                                            listOf(
+                                                Color.White.copy(alpha = 0.9f),
+                                                Color.White.copy(alpha = 0.4f)
+                                            )
+                                        ),
+                                        RoundedCornerShape(28.dp)
                                     )
                                 } else {
-                                    Brush.linearGradient(
-                                        listOf(
-                                            Color.White.copy(alpha = 0.9f),
-                                            Color.White.copy(alpha = 0.4f)
-                                        )
-                                    )
-                                },
-                                RoundedCornerShape(28.dp)
+                                    Modifier
+                                }
                             )
-                            .clickable { onToggleFavorito() }
-                            .padding(horizontal = 24.dp, vertical = 12.dp),
-                        contentAlignment = Alignment.Center
+                            .clickable(onClick = onToggleFavorito)
+                            .padding(horizontal = 20.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.favorito),
-                                contentDescription = null,
-                                tint = if (isFavorito) Color.White else Color.White.copy(alpha = 0.8f),
-                                modifier = Modifier.size(24.dp)
-                            )
+                        Icon(
+                            painter = painterResource(id = R.drawable.favorito),
+                            contentDescription = null,
+                            tint = if (isFavorito) Color.White else Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.size(24.dp)
+                        )
 
-                            Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
 
-                            Text(
-                                text = if (isFavorito) "En favoritos" else "Añadir a favoritos",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isFavorito) Color.White else Color.White.copy(alpha = 0.9f)
-                            )
-                        }
+                        Text(
+                            text = if (isFavorito) "En favoritos" else "Añadir a favoritos",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isFavorito) Color.White else Color.White.copy(alpha = 0.9f)
+                        )
                     }
                 }
             }

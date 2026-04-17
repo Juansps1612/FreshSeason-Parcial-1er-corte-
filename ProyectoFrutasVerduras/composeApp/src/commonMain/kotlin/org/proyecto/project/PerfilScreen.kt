@@ -35,7 +35,8 @@ data class OpcionConfiguracion(
 @Composable
 fun PerfilScreen(
     onLogout: () -> Unit = {},
-    onEditClick: () -> Unit = {}
+    onEditClick: () -> Unit = {},
+    totalFavoritos: Int
 ) {
 
     val opcionesConfig = remember {
@@ -52,7 +53,7 @@ fun PerfilScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item { PerfilPrincipalCard(onEditClick = onEditClick) }
-            item { InfoBasicaCard() }
+            item { InfoBasicaCard(totalFavoritos = totalFavoritos) }
             item {
                 Text(
                     text = "⚙️ Configuración",
@@ -154,9 +155,8 @@ fun PerfilPrincipalCard(onEditClick: () -> Unit = {}) {
 }
 
 @Composable
-fun InfoBasicaCard() {
+fun InfoBasicaCard(totalFavoritos: Int) {
     val fechaRegistro = SessionManager.fechaRegistro
-    val totalFavoritos = SessionManager.totalFavoritos
 
     val fechaFormateada = remember(fechaRegistro) {
         try {
