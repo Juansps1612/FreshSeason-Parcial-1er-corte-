@@ -498,70 +498,69 @@ fun ProductoPerfilScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    Row(
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .defaultMinSize(minHeight = 52.dp)
-                            .clip(RoundedCornerShape(28.dp))
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(30.dp))
                             .background(
                                 if (isFavorito) {
                                     Brush.verticalGradient(
                                         listOf(
-                                            Color(0xFFFF6B6B),
+                                            Color(0xFFFF5252),
                                             Color(0xFFC62828)
                                         )
                                     )
                                 } else {
                                     Brush.verticalGradient(
                                         listOf(
-                                            Color.White.copy(alpha = 0.28f),
-                                            Color.White.copy(alpha = 0.18f)
+                                            Color.White.copy(alpha = 0.25f),
+                                            Color.White.copy(alpha = 0.15f)
                                         )
                                     )
                                 }
                             )
-                            .then(
-                                if (!isFavorito) {
-                                    Modifier.border(
-                                        1.5.dp,
-                                        Brush.linearGradient(
-                                            listOf(
-                                                Color.White.copy(alpha = 0.9f),
-                                                Color.White.copy(alpha = 0.4f)
-                                            )
-                                        ),
-                                        RoundedCornerShape(28.dp)
+                            .border(
+                                width = 1.5.dp,
+                                brush = Brush.linearGradient(
+                                    listOf(
+                                        Color.White.copy(alpha = 0.9f),
+                                        Color.White.copy(alpha = 0.4f)
                                     )
-                                } else {
-                                    Modifier
-                                }
+                                ),
+                                shape = RoundedCornerShape(30.dp)
                             )
-                            .clickable(onClick = onToggleFavorito)
-                            .padding(horizontal = 20.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                            .clickable { onToggleFavorito() },
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.favorito),
-                            contentDescription = null,
-                            tint = if (isFavorito) Color.White else Color.White.copy(alpha = 0.8f),
-                            modifier = Modifier.size(24.dp)
-                        )
 
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.favorito),
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(22.dp)
+                            )
 
-                        Text(
-                            text = if (isFavorito) "En favoritos" else "Añadir a favoritos",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isFavorito) Color.White else Color.White.copy(alpha = 0.9f)
-                        )
+                            Spacer(modifier = Modifier.width(10.dp))
+
+                            Text(
+                                text = if (isFavorito) "En favoritos" else "Añadir a favoritos",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
                     }
                 }
             }
         }
     }
-}
+
 
 // -------------------- SECCIÓN DE SUGERENCIAS --------------------
 @Composable
