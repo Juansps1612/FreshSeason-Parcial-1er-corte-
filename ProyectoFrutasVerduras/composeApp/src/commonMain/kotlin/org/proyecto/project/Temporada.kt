@@ -28,13 +28,13 @@ import java.util.Calendar
 
 // -------------------- TEMPORADA SCREEN --------------------
 @Composable
-fun TemporadaScreen() {
+fun TemporadaScreen(productos: List<Producto> = todosLosProductos) {
 
     var mesSeleccionado by remember { mutableStateOf(obtenerMesActual()) }
     var filtroTipo by remember { mutableStateOf("Todos") } // "Todos", "Frutas", "Verduras"
 
     val productosFiltrados = remember(mesSeleccionado, filtroTipo) {
-        todosLosProductos.filter { producto ->
+        productos.filter { producto ->
             // Manejar productos que cruzan el año (como naranja: nov a mar)
             val productoEnRango = if (producto.mesInicio > producto.mesFin) {
                 // Caso especial: cruza fin de año

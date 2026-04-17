@@ -35,7 +35,8 @@ import java.util.Calendar
 // -------------------- BUSCAR SCREEN --------------------
 @Composable
 fun BuscarScreen(
-    favoritosViewModel: FavoritosViewModel
+    favoritosViewModel: FavoritosViewModel,
+    productosViewModel: ProductosViewModel
 ) {
 
     var searchText by remember { mutableStateOf("") }
@@ -49,9 +50,8 @@ fun BuscarScreen(
 
     val filtros = listOf("Todos", "Frutas", "Verduras", "Temporada", "Beneficios")
 
-    // Usar la lista centralizada de Data.kt
-    val todosLosProductosBusqueda = remember {
-        todosLosProductos.map { it.toProductoBusqueda() }
+    val todosLosProductosBusqueda = remember(productosViewModel.productos) {
+        productosViewModel.productos.map { it.toProductoBusqueda() }
     }
 
     // Simular búsqueda

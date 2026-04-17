@@ -41,6 +41,7 @@ import org.proyecto.project.model.LoginResponse
 fun LoginScreen(
     onBackClick: () -> Unit,
     onNavigateToHome: () -> Unit = {},
+    onNavigateToRegister: () -> Unit = {},
     favoritosViewModel: FavoritosViewModel
 ) {
     var visible by remember { mutableStateOf(false) }
@@ -186,7 +187,7 @@ fun LoginScreen(
                                     try {
                                         // Usamos la IP del emulador directamente
                                         val response: LoginResponse = client.get(
-                                            "http://192.168.1.7/freshseason_api/login.php?email=$email&contrasena=$password"
+                                            "http://10.0.2.2/freshseason_api/login.php?email=$email&contrasena=$password"
                                         ).body()
 
                                         if (response.success) {
@@ -231,7 +232,12 @@ fun LoginScreen(
 
                     Row(horizontalArrangement = Arrangement.Center) {
                         Text("¿No tienes cuenta? ", color = Color.White.copy(0.85f))
-                        Text("Regístrate", color = Color.White, fontWeight = FontWeight.SemiBold, modifier = Modifier.clickable { })
+                        Text(
+                            "Regístrate",
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.clickable(enabled = !loading) { onNavigateToRegister() }
+                        )
                     }
 
                     Spacer(Modifier.height(16.dp))

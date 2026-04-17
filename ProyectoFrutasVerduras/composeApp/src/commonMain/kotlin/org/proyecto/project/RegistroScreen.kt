@@ -32,6 +32,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import org.proyecto.project.model.RegisterResponse
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -47,13 +48,17 @@ fun RegistroScreen(
     
     val scope = rememberCoroutineScope()
     
+    val jsonParser = remember {
+        Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+        }
+    }
+
     val client = remember {
         HttpClient(CIO) {
             install(ContentNegotiation) {
-                json(Json { 
-                    ignoreUnknownKeys = true 
-                    isLenient = true
-                })
+                json(jsonParser)
             }
         }
     }
@@ -161,18 +166,24 @@ fun RegistroScreen(
                                 loading = true
                                 errorMessage = null
                                 try {
-                                    val response: String = client.submitForm(
-                                        url = "http://192.168.1.7/freshseason_api/register.php",
+                                    val responseText: String = client.submitForm(
+                                        url = "http://10.0.2.2/freshseason_api/register.php",
                                         formParameters = parameters {
                                             append("nombre", nombre)
                                             append("email", email)
                                             append("contrasena", password)
                                         }
                                     ).body()
-                                    
-                                    // Asumiendo que el PHP devuelve un JSON con success:true
-                                    // Por simplicidad si no lanza error, asumimos éxito o validamos el string
-                                    onRegisterSuccess()
+
+                                    val parsed = runCatching {
+                                        jsonParser.decodeFromString<RegisterResponse>(responseText)
+                                    }.getOrNull()
+                                    if (parsed?.success == true) {
+                                        onRegisterSuccess()
+                                    } else {
+                                        errorMessage = parsed?.message
+                                            ?: "No se pudo registrar (revisa la respuesta del servidor)"
+                                    }
                                 } catch (e: Exception) {
                                     errorMessage = "Error: ${e.message}"
                                 } finally {

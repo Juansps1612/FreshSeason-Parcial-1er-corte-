@@ -13,7 +13,8 @@ materialIconsCore = "1.7.0"
 material3 = "1.4.0"
 moko-resources = "0.23.0"
 foundationLayout = "1.10.4"
-foundation = "1.10.4"  # AÑADIDO
+foundation = "1.10.4"
+foundationVersion = "1.10.6"  # AÑADIDO
 
 [libraries]
 # Compose Multiplatform (JetBrains)
@@ -47,6 +48,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

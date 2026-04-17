@@ -19,4 +19,10 @@ object SessionManager {
     }
 
     fun estaLogueado() = userId != 0
+
+    fun esAdmin(): Boolean {
+        // Fuente de verdad: columna `membresia` devuelta por login.php
+        return membresia.equals("Admin", ignoreCase = true) ||
+            membresia.equals("Premium", ignoreCase = true)
+    }
 }

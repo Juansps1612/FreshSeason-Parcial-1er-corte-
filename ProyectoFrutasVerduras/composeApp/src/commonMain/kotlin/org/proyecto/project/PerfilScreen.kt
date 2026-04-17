@@ -36,13 +36,21 @@ data class OpcionConfiguracion(
 fun PerfilScreen(
     onLogout: () -> Unit = {},
     onEditClick: () -> Unit = {},
+    onAdminUsuariosClick: () -> Unit = {},
+    onAdminProductosClick: () -> Unit = {},
     totalFavoritos: Int
 ) {
 
-    val opcionesConfig = remember {
-        mutableStateListOf(
-            OpcionConfiguracion("Cerrar sesión", R.drawable.salir, "logout")
-        )
+    val esAdmin = SessionManager.esAdmin()
+
+    val opcionesConfig = remember(esAdmin) {
+        mutableStateListOf<OpcionConfiguracion>().apply {
+            if (esAdmin) {
+                add(OpcionConfiguracion("Gestionar usuarios", R.drawable.editar_usuario, "admin_users"))
+                add(OpcionConfiguracion("Gestionar productos", R.drawable.fruta, "admin_products"))
+            }
+            add(OpcionConfiguracion("Cerrar sesión", R.drawable.salir, "logout"))
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -69,7 +77,9 @@ fun PerfilScreen(
                     onSwitchChanged = { nuevoValor ->
                         opcionesConfig[index] = opcionesConfig[index].copy(valorSwitch = nuevoValor)
                     },
-                    onLogout = onLogout
+                    onLogout = onLogout,
+                    onAdminUsuariosClick = onAdminUsuariosClick,
+                    onAdminProductosClick = onAdminProductosClick
                 )
             }
             item { Spacer(modifier = Modifier.height(20.dp)) }
@@ -201,7 +211,9 @@ fun InfoBasicaCard(totalFavoritos: Int) {
 fun ConfiguracionItem(
     opcion: OpcionConfiguracion,
     onSwitchChanged: (Boolean) -> Unit,
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    onAdminUsuariosClick: () -> Unit = {},
+    onAdminProductosClick: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -210,6 +222,10 @@ fun ConfiguracionItem(
                 if (opcion.ruta == "logout") {
                     SessionManager.cerrarSesion()
                     onLogout()
+                } else if (opcion.ruta == "admin_users") {
+                    onAdminUsuariosClick()
+                } else if (opcion.ruta == "admin_products") {
+                    onAdminProductosClick()
                 }
             },
         shape = RoundedCornerShape(16.dp),

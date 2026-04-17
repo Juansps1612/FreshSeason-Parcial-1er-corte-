@@ -50,8 +50,15 @@ fun App() {
                 onNavigateToHome = {
                     currentScreen = "home"
                 },
+                onNavigateToRegister = {
+                    currentScreen = "registro"
+                },
+                favoritosViewModel = favoritosViewModel // <--- PASA EL VIEWMODEL AQUÍ
+            )
 
-                        favoritosViewModel = favoritosViewModel // <--- PASA EL VIEWMODEL AQUÍ
+            "registro" -> RegistroScreen(
+                onBackClick = { currentScreen = "login" },
+                onRegisterSuccess = { currentScreen = "login" }
             )
 
             "home" -> HomeScreen(onLogout = {

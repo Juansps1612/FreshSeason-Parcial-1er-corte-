@@ -58,18 +58,20 @@ val consejos = listOf(
 @Composable
 fun HomeScreen(
     onLogout: () -> Unit = {},
-    favoritosViewModel: FavoritosViewModel = viewModel() // <--- RECIBE EL VM DE APP.KT
+    favoritosViewModel: FavoritosViewModel = viewModel(), // <--- RECIBE EL VM DE APP.KT
+    productosViewModel: ProductosViewModel = viewModel()
 ) {
 
     var selectedItem by remember { mutableStateOf(0) }
     var mostrarPerfil by remember { mutableStateOf(false) }
-    var editandoPerfil by remember { mutableStateOf(false) }
+    var perfilRuta by remember { mutableStateOf("perfil") } // perfil | editar | admin_users | admin_products
     var recetaDesplegada by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         if (SessionManager.userId != 0) {
             favoritosViewModel.cargarFavoritos()
         }
+        productosViewModel.refrescar()
     }
 
     val consejoActual = remember(selectedItem) {
@@ -172,7 +174,7 @@ fun HomeScreen(
                         )
                         .clickable {
                             mostrarPerfil = !mostrarPerfil
-                            if (!mostrarPerfil) editandoPerfil = false
+                            if (!mostrarPerfil) perfilRuta = "perfil"
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -198,12 +200,18 @@ fun HomeScreen(
                 .padding(top = 120.dp, bottom = 100.dp)
         ) {
             if (mostrarPerfil) {
-                if (editandoPerfil) {
-                    EditarPerfilScreen(onBack = { editandoPerfil = false })
-                } else {
-                    PerfilScreen(
+                when (perfilRuta) {
+                    "editar" -> EditarPerfilScreen(onBack = { perfilRuta = "perfil" })
+                    "admin_users" -> AdminUsuariosScreen(onBack = { perfilRuta = "perfil" })
+                    "admin_products" -> AdminProductosScreen(
+                        onBack = { perfilRuta = "perfil" },
+                        productosViewModel = productosViewModel
+                    )
+                    else -> PerfilScreen(
                         onLogout = onLogout,
-                        onEditClick = { editandoPerfil = true },
+                        onEditClick = { perfilRuta = "editar" },
+                        onAdminUsuariosClick = { perfilRuta = "admin_users" },
+                        onAdminProductosClick = { perfilRuta = "admin_products" },
                         totalFavoritos = favoritosViewModel.favoritos.size
                     )
                 }
@@ -269,9 +277,9 @@ fun HomeScreen(
                             }
                         }
                     }
-                    1 -> TemporadaScreen()
+                    1 -> TemporadaScreen(productos = productosViewModel.productos)
                     // 🔥 PASAMOS EL MISMO VM A LAS PANTALLAS
-                    2 -> BuscarScreen(favoritosViewModel = favoritosViewModel)
+                    2 -> BuscarScreen(favoritosViewModel = favoritosViewModel, productosViewModel = productosViewModel)
                     3 -> FavoritosScreen(favoritosViewModel = favoritosViewModel)
                     4 -> BeneficiosScreen()
                 }
@@ -291,10 +299,11 @@ fun HomeScreen(
                 onItemSelected = {
                     selectedItem = it
                     mostrarPerfil = false
-                    editandoPerfil = false
+                    perfilRuta = "perfil"
                 },
                 items = items
             )
+
         }
     }
 }
