@@ -33,10 +33,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-// -------------------- MODELO DE DATOS --------------------
-
-// -------------------- BUSCAR SCREEN --------------------
-// -------------------- BUSCAR SCREEN --------------------
 // -------------------- BUSCAR SCREEN --------------------
 @Composable
 fun BuscarScreen(
@@ -54,7 +50,7 @@ fun BuscarScreen(
 
     val filtros = listOf("Todos", "Frutas", "Verduras", "Temporada", "Beneficios")
 
-    // Convertir todos los productos a ProductoBusqueda
+    // Usar la lista centralizada de Data.kt
     val todosLosProductosBusqueda = remember {
         todosLosProductos.map { it.toProductoBusqueda() }
     }
@@ -951,20 +947,3 @@ fun TarjetaSinResultados(query: String) {
         }
     }
 }
-
-// -------------------- DATOS PARA BÚSQUEDA --------------------
-val productosDisponibles = listOf(
-    ProductoBusqueda("Fresa", "Fruta", "Primavera", "Rica en vitamina C y antioxidantes", Color(0xFFFF6B6B), R.drawable.fresa),
-    ProductoBusqueda("Manzana", "Fruta", "Otoño", "Regula el tránsito intestinal", Color(0xFFEF5350), R.drawable.manzana),
-    ProductoBusqueda("Plátano", "Fruta", "Todo el año", "Rico en potasio y energía", Color(0xFFFFD54F), R.drawable.banano),
-    ProductoBusqueda("Espinaca", "Verdura", "Primavera", "Fuente de hierro y vitaminas", Color(0xFF43A047), R.drawable.espinaca),
-    ProductoBusqueda("Brócoli", "Verdura", "Invierno", "Alto en calcio y antioxidantes", Color(0xFF2E7D32), R.drawable.brocoli),
-    ProductoBusqueda("Zanahoria", "Verdura", "Todo el año", "Rica en betacaroteno", Color(0xFFFF9800), R.drawable.zanahoria),
-    ProductoBusqueda("Naranja", "Fruta", "Invierno", "Fortalece las defensas", Color(0xFFFFA726), R.drawable.naranja),
-    ProductoBusqueda("Tomate", "Verdura", "Verano", "Licopeno antioxidante", Color(0xFFE53935), R.drawable.tomate),
-    ProductoBusqueda("Aguacate", "Fruta", "Todo el año", "Grasas saludables", Color(0xFF8D6E63), R.drawable.aguacate),
-    ProductoBusqueda("Calabacín", "Verdura", "Verano", "Bajo en calorías", Color(0xFF66BB6A), R.drawable.calabacin)
-)
-
-// -------------------- FUNCIÓN AUXILIAR --------------------
-

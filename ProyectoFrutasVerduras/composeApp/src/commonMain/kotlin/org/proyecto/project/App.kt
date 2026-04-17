@@ -3,6 +3,7 @@ package org.proyecto.project
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.proyecto.project.model.LoginResponse
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -16,6 +17,7 @@ import kotlinx.serialization.json.Json
 fun App() {
 
     var currentScreen by remember { mutableStateOf("presentation") }
+    val favoritosViewModel: FavoritosViewModel = viewModel()
 
     // Cliente HTTP configurado correctamente
     val client = remember {
@@ -47,10 +49,16 @@ fun App() {
                 },
                 onNavigateToHome = {
                     currentScreen = "home"
-                }
+                },
+
+                        favoritosViewModel = favoritosViewModel // <--- PASA EL VIEWMODEL AQUÍ
             )
 
-            "home" -> HomeScreen()
+            "home" -> HomeScreen(onLogout = {
+                favoritosViewModel.limpiarFavoritos()
+                currentScreen = "login" },
+                favoritosViewModel = favoritosViewModel
+                )
 
             else -> {
                 androidx.compose.foundation.layout.Box(

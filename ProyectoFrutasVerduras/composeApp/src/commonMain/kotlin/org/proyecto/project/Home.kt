@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,17 +55,17 @@ val consejos = listOf(
     "Elegir productos naturales mejora tu salud."
 )
 
-// -------------------- HOME --------------------
-// -------------------- HOME --------------------
-// -------------------- HOME --------------------
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onLogout: () -> Unit = {},
+    favoritosViewModel: FavoritosViewModel = viewModel() // <--- RECIBE EL VM DE APP.KT
+) {
 
     var selectedItem by remember { mutableStateOf(0) }
-    var mostrarPerfil by remember { mutableStateOf(false) } // Nuevo estado para perfil
+    var mostrarPerfil by remember { mutableStateOf(false) }
+    var editandoPerfil by remember { mutableStateOf(false) }
     var recetaDesplegada by remember { mutableStateOf(false) }
 
-    // Cambiar consejo cuando se selecciona Home (índice 0)
     val consejoActual = remember(selectedItem) {
         if (selectedItem == 0) {
             consejos[Random.nextInt(consejos.size)]
@@ -164,6 +166,7 @@ fun HomeScreen() {
                         )
                         .clickable {
                             mostrarPerfil = !mostrarPerfil
+                            if (!mostrarPerfil) editandoPerfil = false
                         },
                     contentAlignment = Alignment.Center
                 ) {
@@ -182,15 +185,21 @@ fun HomeScreen() {
             }
         }
 
-        // ---------------- CONTENIDO VARIABLE SEGÚN PESTAÑA ----------------
+        // ---------------- CONTENIDO VARIABLE ----------------
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 120.dp, bottom = 100.dp)
         ) {
             if (mostrarPerfil) {
-                // Mostrar pantalla de perfil
-                PerfilScreen()
+                if (editandoPerfil) {
+                    EditarPerfilScreen(onBack = { editandoPerfil = false })
+                } else {
+                    PerfilScreen(
+                        onLogout = onLogout,
+                        onEditClick = { editandoPerfil = true }
+                    )
+                }
             } else {
                 when (selectedItem) {
                     0 -> {
@@ -254,14 +263,15 @@ fun HomeScreen() {
                         }
                     }
                     1 -> TemporadaScreen()
-                    2 -> BuscarScreen()
-                    3 -> FavoritosScreen()
+                    // 🔥 PASAMOS EL MISMO VM A LAS PANTALLAS
+                    2 -> BuscarScreen(favoritosViewModel = favoritosViewModel)
+                    3 -> FavoritosScreen(favoritosViewModel = favoritosViewModel)
                     4 -> BeneficiosScreen()
                 }
             }
         }
 
-        // ---------------- BOTTOM BAR FLOTANTE ----------------
+        // ---------------- BOTTOM BAR ----------------
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -270,19 +280,20 @@ fun HomeScreen() {
             contentAlignment = Alignment.BottomCenter
         ) {
             FloatingBottomBarLoginStyle(
-                selectedItem = if (mostrarPerfil) -1 else selectedItem, // Si está en perfil, ningún item seleccionado
+                selectedItem = if (mostrarPerfil) -1 else selectedItem,
                 onItemSelected = {
                     selectedItem = it
-                    mostrarPerfil = false // Cerrar perfil al cambiar de pestaña
+                    mostrarPerfil = false
+                    editandoPerfil = false
                 },
                 items = items
             )
         }
-        }
     }
+}
 
-// -------------------- TARJETA DE RECETA DETALLADA (mismo diseño) --------------------
-// -------------------- TARJETA DE RECETA DETALLADA --------------------
+// ... El resto de tus componentes (RecetaDetalleCard, GlassCard, etc.) se mantienen igual ...
+
 @Composable
 fun RecetaDetalleCard(
     nombreReceta: String,
@@ -291,12 +302,11 @@ fun RecetaDetalleCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight() // Se ajusta al contenido
+            .wrapContentHeight()
             .padding(horizontal = 24.dp, vertical = 10.dp),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -321,7 +331,6 @@ fun RecetaDetalleCard(
                     RoundedCornerShape(24.dp)
                 )
         ) {
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -329,16 +338,13 @@ fun RecetaDetalleCard(
                     .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Text(
                     text = "🍽 $nombreReceta",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
-
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Text(
                     text = preparacion,
                     fontSize = 14.sp,
@@ -350,7 +356,7 @@ fun RecetaDetalleCard(
         }
     }
 }
-// -------------------- TARJETA MODIFICADA --------------------
+
 @Composable
 fun GlassCard(
     title: String,
@@ -358,11 +364,10 @@ fun GlassCard(
     isClickable: Boolean = false,
     onClick: (() -> Unit)? = null
 ) {
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight() // Se ajusta al contenido
+            .wrapContentHeight()
             .padding(horizontal = 24.dp, vertical = 10.dp)
             .then(
                 if (isClickable) {
@@ -374,7 +379,6 @@ fun GlassCard(
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -399,154 +403,20 @@ fun GlassCard(
                     RoundedCornerShape(24.dp)
                 )
         ) {
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(20.dp), // Padding original
+                    .padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Text(
                     text = title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White
                 )
-
                 Spacer(modifier = Modifier.height(6.dp))
-
-                Text(
-                    text = text,
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.9f),
-                    textAlign = TextAlign.Center,
-                    // Eliminamos maxLines y overflow para que se muestre completo
-                )
-            }
-        }
-    }
-}
-
-// -------------------- TARJETA DE RECETA DETALLADA --------------------
-@Composable
-fun RecetaDetalleCard() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(180.dp) // Más altura para la receta detallada
-            .padding(horizontal = 24.dp, vertical = 10.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-    ) {
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(24.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color(0xFF4CAF50).copy(alpha = 0.4f),
-                            Color(0xFF2E7D32).copy(alpha = 0.3f)
-                        )
-                    )
-                )
-                .border(
-                    2.dp,
-                    Brush.linearGradient(
-                        listOf(
-                            Color(0xFFA5D6A5),
-                            Color(0xFF81C784)
-                        )
-                    ),
-                    RoundedCornerShape(24.dp)
-                )
-        ) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-
-                Text(
-                    text = "🥗 Cómo prepararla",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "1. Lava bien los vegetales\n" +
-                            "2. Corta el tomate y aguacate en cubos\n" +
-                            "3. Mezcla con hojas verdes\n" +
-                            "4. Aliña con jugo de limón, aceite y sal\n" +
-                            "5. ¡Disfruta tu ensalada fresca!",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.95f),
-                    textAlign = TextAlign.Start,
-                    lineHeight = 20.sp
-                )
-            }
-        }
-    }
-}
-// -------------------- TARJETA --------------------
-@Composable
-fun GlassCard(title: String, text: String) {
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 10.dp)
-            .clickable { },
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-    ) {
-
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(24.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.28f),
-                            Color.White.copy(alpha = 0.18f)
-                        )
-                    )
-                )
-                .border(
-                    1.5.dp,
-                    Brush.linearGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.9f),
-                            Color.White.copy(alpha = 0.4f)
-                        )
-                    ),
-                    RoundedCornerShape(24.dp)
-                )
-        ) {
-
-            Column(
-                modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                Text(
-                    text = title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
                 Text(
                     text = text,
                     fontSize = 14.sp,
@@ -558,14 +428,12 @@ fun GlassCard(title: String, text: String) {
     }
 }
 
-// -------------------- BOTTOM BAR --------------------
 @Composable
 fun FloatingBottomBarLoginStyle(
     selectedItem: Int,
     onItemSelected: (Int) -> Unit,
     items: List<BottomNavItem>
 ) {
-
     Box(
         modifier = Modifier
             .wrapContentWidth()
@@ -596,27 +464,20 @@ fun FloatingBottomBarLoginStyle(
             .padding(horizontal = 12.dp),
         contentAlignment = Alignment.Center
     ) {
-
         Row(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             items.forEachIndexed { index, item ->
-
                 val isSelected = index == selectedItem
-
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .padding(horizontal = 12.dp)
                         .clickable { onItemSelected(index) }
                 ) {
-
                     PlatformIcon(item.icon, isSelected)
-
                     Spacer(modifier = Modifier.height(4.dp))
-
                     Text(
                         text = item.label,
                         fontSize = 12.sp,
@@ -631,10 +492,9 @@ fun FloatingBottomBarLoginStyle(
         }
     }
 }
-// -------------------- ICONOS --------------------
+
 @Composable
 fun PlatformIcon(icon: AppIcon, isSelected: Boolean) {
-
     val iconResource = when (icon) {
         AppIcon.Home -> R.drawable.casa
         AppIcon.Calendar -> R.drawable.calendario

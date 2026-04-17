@@ -28,42 +28,31 @@ data class OpcionConfiguracion(
     val icono: Int,
     val ruta: String? = null,
     val esSwitch: Boolean = false,
-    var valorSwitch: Boolean = false
+    val valorSwitch: Boolean = false
 )
 
 // -------------------- PERFIL SCREEN --------------------
 @Composable
-fun PerfilScreen() {
+fun PerfilScreen(
+    onLogout: () -> Unit = {},
+    onEditClick: () -> Unit = {}
+) {
 
     val opcionesConfig = remember {
-        listOf(
+        mutableStateListOf(
             OpcionConfiguracion("Cerrar sesión", R.drawable.salir, "logout")
-        ).toMutableStateList()
+        )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-
+    Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
-            // Tarjeta de perfil principal
-            item {
-                PerfilPrincipalCard()
-            }
-
-            // Información básica
-            item {
-                InfoBasicaCard()
-            }
-
-            // Configuración
+            item { PerfilPrincipalCard(onEditClick = onEditClick) }
+            item { InfoBasicaCard() }
             item {
                 Text(
                     text = "⚙️ Configuración",
@@ -73,34 +62,36 @@ fun PerfilScreen() {
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
-
             items(opcionesConfig.size) { index ->
                 ConfiguracionItem(
                     opcion = opcionesConfig[index],
                     onSwitchChanged = { nuevoValor ->
                         opcionesConfig[index] = opcionesConfig[index].copy(valorSwitch = nuevoValor)
-                    }
+                    },
+                    onLogout = onLogout
                 )
             }
-
-            // Espacio final
-            item {
-                Spacer(modifier = Modifier.height(20.dp))
-            }
+            item { Spacer(modifier = Modifier.height(20.dp)) }
         }
     }
 }
 
-// -------------------- TARJETA DE PERFIL PRINCIPAL --------------------
 @Composable
-fun PerfilPrincipalCard() {
-    val iniciales = remember { "US" }
-    val colorAvatar = remember { Color(0xFF4CAF50) }
+fun PerfilPrincipalCard(onEditClick: () -> Unit = {}) {
+    val nombre = SessionManager.nombre
+    val email = SessionManager.email
+    val membresia = SessionManager.membresia
+
+    val iniciales = remember(nombre) {
+        nombre.split(" ")
+            .filter { it.isNotBlank() }
+            .take(2)
+            .joinToString("") { it.first().uppercase() }
+            .ifEmpty { "US" }
+    }
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
+        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
@@ -108,111 +99,46 @@ fun PerfilPrincipalCard() {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.28f),
-                            Color.White.copy(alpha = 0.18f)
-                        )
-                    )
-                )
-                .border(
-                    2.dp,
-                    Brush.linearGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.9f),
-                            Color.White.copy(alpha = 0.4f)
-                        )
-                    ),
-                    RoundedCornerShape(24.dp)
-                )
+                .background(Brush.verticalGradient(listOf(Color.White.copy(0.28f), Color.White.copy(0.18f))))
+                .border(2.dp, Brush.linearGradient(listOf(Color.White.copy(0.9f), Color.White.copy(0.4f))), RoundedCornerShape(24.dp))
                 .padding(20.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Avatar con iniciales
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(CircleShape)
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(
-                                    colorAvatar,
-                                    colorAvatar.copy(alpha = 0.7f)
-                                )
-                            )
-                        )
-                        .border(
-                            2.dp,
-                            Color.White.copy(alpha = 0.5f),
-                            CircleShape
-                        ),
+                        .background(Color(0xFF4CAF50))
+                        .border(2.dp, Color.White.copy(0.5f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = iniciales,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Text(text = iniciales, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                // Información del usuario
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = "Usuario FreshSeason",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = nombre, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(text = email, fontSize = 14.sp, color = Color.White.copy(0.7f))
 
-                    Text(
-                        text = "usuario@email.com",
-                        fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.7f)
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // Membresía
                     Box(
                         modifier = Modifier
+                            .padding(top = 4.dp)
                             .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF4CAF50).copy(alpha = 0.3f))
-                            .border(
-                                1.dp,
-                                Color(0xFF4CAF50).copy(alpha = 0.5f),
-                                RoundedCornerShape(12.dp)
-                            )
+                            .background(Color(0xFF4CAF50).copy(0.3f))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        Text(
-                            text = "Membresía Premium",
-                            fontSize = 10.sp,
-                            color = Color(0xFF4CAF50),
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text(text = "Membresía $membresia", fontSize = 10.sp, color = Color(0xFF4CAF50), fontWeight = FontWeight.Bold)
                     }
                 }
 
-                // Botón editar (icono pequeño)
                 Box(
                     modifier = Modifier
                         .size(36.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White.copy(alpha = 0.2f))
-                        .clickable { }
-                        .border(
-                            1.dp,
-                            Color.White.copy(alpha = 0.3f),
-                            RoundedCornerShape(10.dp)
-                        ),
+                        .background(Color.White.copy(0.2f))
+                        .border(1.dp, Color.White.copy(0.3f), RoundedCornerShape(10.dp))
+                        .clickable { onEditClick() },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -227,13 +153,22 @@ fun PerfilPrincipalCard() {
     }
 }
 
-// -------------------- TARJETA DE INFORMACIÓN BÁSICA --------------------
 @Composable
 fun InfoBasicaCard() {
+    val fechaRegistro = SessionManager.fechaRegistro
+    val totalFavoritos = SessionManager.totalFavoritos
+
+    val fechaFormateada = remember(fechaRegistro) {
+        try {
+            val partes = fechaRegistro.split("-")
+            val meses = listOf("Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic")
+            val mesIdx = partes[1].toInt() - 1
+            "${meses[mesIdx]} ${partes[0]}"
+        } catch (e: Exception) { "—" }
+    }
+
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
+        modifier = Modifier.fillMaxWidth().wrapContentHeight(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
@@ -241,97 +176,42 @@ fun InfoBasicaCard() {
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(24.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.28f),
-                            Color.White.copy(alpha = 0.18f)
-                        )
-                    )
-                )
-                .border(
-                    2.dp,
-                    Brush.linearGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.9f),
-                            Color.White.copy(alpha = 0.4f)
-                        )
-                    ),
-                    RoundedCornerShape(24.dp)
-                )
+                .background(Brush.verticalGradient(listOf(Color.White.copy(0.28f), Color.White.copy(0.18f))))
+                .border(2.dp, Brush.linearGradient(listOf(Color.White.copy(0.9f), Color.White.copy(0.4f))), RoundedCornerShape(24.dp))
                 .padding(20.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                // Favoritos
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.favorito),
-                        contentDescription = null,
-                        tint = Color(0xFFEF5350),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "24",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "Favoritos",
-                        fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.7f)
-                    )
+                    Icon(painterResource(R.drawable.favorito), null, tint = Color(0xFFEF5350), modifier = Modifier.size(24.dp))
+                    Text(text = totalFavoritos.toString(), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(text = "Favoritos", fontSize = 12.sp, color = Color.White.copy(0.7f))
                 }
-
-                // Divisor vertical
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(60.dp)
-                        .background(Color.White.copy(alpha = 0.2f))
-                )
-
-                // Miembro desde
+                Box(modifier = Modifier.width(1.dp).height(60.dp).background(Color.White.copy(0.2f)))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.calendario),
-                        contentDescription = null,
-                        tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Mar 2026",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Text(
-                        text = "Miembro desde",
-                        fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.7f)
-                    )
+                    Icon(painterResource(R.drawable.calendario), null, tint = Color(0xFF4CAF50), modifier = Modifier.size(24.dp))
+                    Text(text = fechaFormateada, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(text = "Miembro desde", fontSize = 12.sp, color = Color.White.copy(0.7f))
                 }
             }
         }
     }
 }
 
-// -------------------- ITEM DE CONFIGURACIÓN --------------------
 @Composable
 fun ConfiguracionItem(
     opcion: OpcionConfiguracion,
-    onSwitchChanged: (Boolean) -> Unit
+    onSwitchChanged: (Boolean) -> Unit,
+    onLogout: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
-            .clickable(enabled = !opcion.esSwitch) { },
+            .clickable(enabled = !opcion.esSwitch) {
+                if (opcion.ruta == "logout") {
+                    SessionManager.cerrarSesion()
+                    onLogout()
+                }
+            },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
@@ -339,60 +219,19 @@ fun ConfiguracionItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(16.dp))
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.28f),
-                            Color.White.copy(alpha = 0.18f)
-                        )
-                    )
-                )
-                .border(
-                    1.5.dp,
-                    Brush.linearGradient(
-                        listOf(
-                            Color.White.copy(alpha = 0.9f),
-                            Color.White.copy(alpha = 0.4f)
-                        )
-                    ),
-                    RoundedCornerShape(16.dp)
-                )
+                .background(Brush.verticalGradient(listOf(Color.White.copy(0.28f), Color.White.copy(0.18f))))
+                .border(1.5.dp, Brush.linearGradient(listOf(Color.White.copy(0.9f), Color.White.copy(0.4f))), RoundedCornerShape(16.dp))
                 .padding(12.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Icono
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color.White.copy(alpha = 0.2f))
-                        .border(
-                            1.dp,
-                            Color.White.copy(alpha = 0.3f),
-                            RoundedCornerShape(10.dp)
-                        ),
+                    modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp)).background(Color.White.copy(0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        painter = painterResource(id = opcion.icono),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    Icon(painterResource(opcion.icono), null, tint = Color.White, modifier = Modifier.size(18.dp))
                 }
-
                 Spacer(modifier = Modifier.width(12.dp))
-
-                // Título
-                Text(
-                    text = opcion.titulo,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White,
-                    modifier = Modifier.weight(1f)
-                )
+                Text(text = opcion.titulo, fontSize = 16.sp, color = Color.White, modifier = Modifier.weight(1f))
             }
         }
     }

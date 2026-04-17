@@ -10,6 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,11 +24,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
+import io.ktor.http.ContentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -36,8 +40,9 @@ import org.proyecto.project.model.LoginResponse
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun LoginScreen(
-    onBackClick: () -> Unit,           // ya no necesitas onLoginClick
-    onNavigateToHome: () -> Unit = {}
+    onBackClick: () -> Unit,
+    onNavigateToHome: () -> Unit = {},
+    favoritosViewModel: FavoritosViewModel = viewModel()
 ) {
     var visible by remember { mutableStateOf(false) }
     var exiting by remember { mutableStateOf(false) }
@@ -49,7 +54,8 @@ fun LoginScreen(
 
     val scope = rememberCoroutineScope()
 
-    // Cliente Ktor (creado una sola vez)
+    // Necesitamos el ViewModel de favoritos para cargar los datos al entrar
+
     val client = remember {
         HttpClient(CIO) {
             install(ContentNegotiation) {
@@ -58,7 +64,7 @@ fun LoginScreen(
                     isLenient = true
                     ignoreUnknownKeys = true
                     coerceInputValues = true
-                })
+                }, contentType = ContentType.Any)
             }
         }
     }
@@ -131,12 +137,13 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text("Correo electrónico") },
+                        label = { Text("Correo electrónico", color = Color.White) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.White.copy(0.9f),
                             unfocusedBorderColor = Color.White.copy(0.5f),
                             focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
                             cursorColor = Color.White
                         ),
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
@@ -148,13 +155,14 @@ fun LoginScreen(
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text("Contraseña") },
+                        label = { Text("Contraseña", color = Color.White) },
                         visualTransformation = PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.White.copy(0.9f),
                             unfocusedBorderColor = Color.White.copy(0.5f),
                             focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
                             cursorColor = Color.White
                         ),
                         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
@@ -163,54 +171,56 @@ fun LoginScreen(
 
                     Spacer(Modifier.height(40.dp))
 
-                    Button(
+                    ModernButton(
+                        text = if (loading) "Iniciando..." else "Iniciar Sesión",
                         onClick = {
-                            scope.launch {
-                                if (email.isBlank() || password.isBlank()) {
-                                    errorMessage = "Completa todos los campos"
-                                    return@launch
-                                }
-
-                                loading = true
-                                errorMessage = null
-
-                                try {
-                                    val response: LoginResponse = client.get(
-                                        "http://10.0.2.2/freshseason_api/login.php?email=$email&contrasena=$password"
-                                    ).body()
-
-                                    println("=== LOGIN RESPONSE ===")
-                                    println("success: ${response.success}")
-                                    println("user: ${response.user}")
-
-                                    if (response.success) {
-                                        exiting = true
-                                    } else {
-                                        errorMessage = response.message ?: "Correo o contraseña incorrectos"
+                            if (!loading) {
+                                scope.launch {
+                                    if (email.isBlank() || password.isBlank()) {
+                                        errorMessage = "Completa todos los campos"
+                                        return@launch
                                     }
 
-                                } catch (e: Exception) {
-                                    println("❌ Error en login: ${e.message}")
-                                    errorMessage = "Error de conexión. Verifica tu internet."
-                                } finally {
-                                    loading = false
+                                    loading = true
+                                    errorMessage = null
+
+                                    try {
+                                        // Usamos la IP del emulador directamente
+                                        val response: LoginResponse = client.get(
+                                            "http://192.168.1.7/freshseason_api/login.php?email=$email&contrasena=$password"
+                                        ).body()
+
+                                        if (response.success) {
+                                            response.user?.let { user ->
+                                                // Guardamos los datos en la sesión local
+                                                favoritosViewModel.setUser(user.id ?: 0)
+                                                SessionManager.nombre = user.nombre ?: ""
+                                                SessionManager.email = user.email ?: ""
+                                                SessionManager.membresia = user.membresia ?: "Free"
+                                                SessionManager.fechaRegistro = user.fechaRegistro.toString()
+
+                                                // CARGAMOS FAVORITOS DESDE LA DB
+
+                                            }
+                                            exiting = true
+                                        } else {
+                                            errorMessage = response.message ?: "Correo o contraseña incorrectos"
+                                        }
+
+                                    } catch (e: Exception) {
+                                        errorMessage = "Error de conexión: ${e.message}"
+                                    } finally {
+                                        loading = false
+                                    }
                                 }
                             }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = !loading
-                    ) {
-                        if (loading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
-                        } else {
-                            Text("Iniciar Sesión")
                         }
-                    }
+                    )
 
                     Spacer(Modifier.height(12.dp))
 
                     errorMessage?.let {
-                        Text(it, color = Color.Red, fontSize = 14.sp, textAlign = TextAlign.Center)
+                        Text(it, color = Color.Red, fontSize = 14.sp, textAlign = TextAlign.Center, fontWeight = FontWeight.Bold)
                     }
 
                     Spacer(Modifier.height(24.dp))
@@ -225,7 +235,7 @@ fun LoginScreen(
                     Text(
                         text = "Volver",
                         color = Color.White.copy(0.7f),
-                        modifier = Modifier.clickable { exiting = true }
+                        modifier = Modifier.clickable { if (!loading) onBackClick() }
                     )
                 }
             }
