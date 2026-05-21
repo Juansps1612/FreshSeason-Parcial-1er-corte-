@@ -187,7 +187,7 @@ fun LoginScreen(
                                     try {
                                         // Usamos la IP del emulador directamente
                                         val response: LoginResponse = client.get(
-                                            "http://10.0.2.2/freshseason_api/login.php?email=$email&contrasena=$password"
+                                            "http://192.168.1.7/freshseason_api/login.php?email=$email&contrasena=$password"
                                         ).body()
 
                                         if (response.success) {

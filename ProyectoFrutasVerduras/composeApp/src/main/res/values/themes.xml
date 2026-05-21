@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.FreshSeason.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#042E04</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.FreshSeason</item>
+    </style>
+
+    <style name="Theme.FreshSeason" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#042E04</item>
+    </style>
+</resources>

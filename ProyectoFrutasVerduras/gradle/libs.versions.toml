@@ -6,6 +6,7 @@ android-targetSdk = "36"
 androidx-activity = "1.12.2"
 androidx-lifecycle = "2.9.6"
 composeMultiplatform = "1.10.0"
+coreSplashscreen = "1.0.1"
 kotlin = "2.3.0"
 ktorClientAndroid = "2.3.7"
 ktorClientContentNegotiation = "2.3.12"
@@ -18,6 +19,7 @@ foundationVersion = "1.10.6"  # AÑADIDO
 
 [libraries]
 # Compose Multiplatform (JetBrains)
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "composeMultiplatform" }

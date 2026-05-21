@@ -42,7 +42,8 @@ kotlin {
 
                 // Íconos Material SOLO para Android
                 implementation(libs.compose.material.icons.core)
-                implementation(libs.compose.material.icons.extended) // agregamos extendidos
+                implementation(libs.compose.material.icons.extended)
+                implementation(libs.androidx.core.splashscreen)// agregamos extendidos
             }
         }
 

@@ -58,28 +58,22 @@ val consejos = listOf(
 @Composable
 fun HomeScreen(
     onLogout: () -> Unit = {},
-    favoritosViewModel: FavoritosViewModel = viewModel(), // <--- RECIBE EL VM DE APP.KT
+    favoritosViewModel: FavoritosViewModel = viewModel(),
     productosViewModel: ProductosViewModel = viewModel()
 ) {
-
     var selectedItem by remember { mutableStateOf(0) }
     var mostrarPerfil by remember { mutableStateOf(false) }
-    var perfilRuta by remember { mutableStateOf("perfil") } // perfil | editar | admin_users | admin_products
+    var perfilRuta by remember { mutableStateOf("perfil") }
     var recetaDesplegada by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        if (SessionManager.userId != 0) {
-            favoritosViewModel.cargarFavoritos()
-        }
+        if (SessionManager.userId != 0) favoritosViewModel.cargarFavoritos()
         productosViewModel.refrescar()
     }
 
     val consejoActual = remember(selectedItem) {
-        if (selectedItem == 0) {
-            consejos[Random.nextInt(consejos.size)]
-        } else {
-            consejos[0]
-        }
+        if (selectedItem == 0) consejos[Random.nextInt(consejos.size)]
+        else consejos[0]
     }
 
     val items = listOf(
@@ -90,105 +84,117 @@ fun HomeScreen(
         BottomNavItem("Beneficios", AppIcon.Benefits)
     )
 
+    // ✅ Box principal — todo lo demás va DENTRO de aquí
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF5CFF5C),
-                        Color(0xFF063D06)
-                    )
-                )
+                Brush.verticalGradient(listOf(Color(0xFF5CFF5C), Color(0xFF063D06)))
             )
     ) {
 
         // ---------------- HEADER ----------------
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.TopCenter)
                 .background(
                     Brush.verticalGradient(
-                        listOf(
-                            Color(0xFF042E04),
-                            Color(0xFF021A02)
-                        )
+                        listOf(Color(0xFF042E04), Color(0xFF021A02))
                     )
                 )
                 .padding(top = 50.dp, bottom = 14.dp, start = 24.dp, end = 24.dp)
         ) {
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                Text(
-                    text = "FreshSeason 🌱",
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF7CFF7C)
-                )
-
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(
-                            if (mostrarPerfil) {
-                                Brush.verticalGradient(
-                                    listOf(
-                                        Color(0xFF6EC6FF).copy(alpha = 0.3f),
-                                        Color(0xFF4A9EFF).copy(alpha = 0.2f)
-                                    )
-                                )
-                            } else {
-                                Brush.verticalGradient(
-                                    listOf(
-                                        Color.White.copy(alpha = 0.28f),
-                                        Color.White.copy(alpha = 0.18f)
-                                    )
-                                )
-                            }
-                        )
-                        .border(
-                            1.5.dp,
-                            if (mostrarPerfil) {
-                                Brush.linearGradient(
-                                    listOf(
-                                        Color(0xFF6EC6FF).copy(alpha = 0.9f),
-                                        Color(0xFF4A9EFF).copy(alpha = 0.4f)
-                                    )
-                                )
-                            } else {
-                                Brush.linearGradient(
-                                    listOf(
-                                        Color.White.copy(alpha = 0.9f),
-                                        Color.White.copy(alpha = 0.4f)
-                                    )
-                                )
-                            },
-                            RoundedCornerShape(18.dp)
-                        )
-                        .clickable {
-                            mostrarPerfil = !mostrarPerfil
-                            if (!mostrarPerfil) perfilRuta = "perfil"
-                        },
-                    contentAlignment = Alignment.Center
+                // ✅ IZQUIERDA: logo + nombre de usuario
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.editar_usuario),
-                        contentDescription = "Perfil",
-                        modifier = Modifier.size(26.dp),
-                        colorFilter = ColorFilter.tint(
-                            if (mostrarPerfil)
-                                Color(0xFF6EC6FF)
-                            else
-                                Color.White
+                    // Logo
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color.White.copy(alpha = 0.10f))
+                            .border(
+                                1.5.dp,
+                                Color(0xFF7CFF7C).copy(alpha = 0.4f),
+                                RoundedCornerShape(14.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.logo),
+                            contentDescription = "Logo",
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(RoundedCornerShape(8.dp))
                         )
-                    )
+                    }
+
+                    // Nombre de la app + usuario
+                    Column {
+                        Text(
+                            text = "FreshSeason",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF7CFF7C),
+                            lineHeight = 20.sp
+                        )
+                        Text(
+                            text = "Hola, ${SessionManager.nombre} 👋",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.White.copy(alpha = 0.65f),
+                            lineHeight = 14.sp
+                        )
+                    }
+                }
+
+                // DERECHA: botones (sin cambios)
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .background(
+                                if (mostrarPerfil)
+                                    Brush.verticalGradient(listOf(Color(0xFF6EC6FF).copy(alpha = 0.3f), Color(0xFF4A9EFF).copy(alpha = 0.2f)))
+                                else
+                                    Brush.verticalGradient(listOf(Color.White.copy(alpha = 0.28f), Color.White.copy(alpha = 0.18f)))
+                            )
+                            .border(
+                                1.5.dp,
+                                if (mostrarPerfil)
+                                    Brush.linearGradient(listOf(Color(0xFF6EC6FF).copy(alpha = 0.9f), Color(0xFF4A9EFF).copy(alpha = 0.4f)))
+                                else
+                                    Brush.linearGradient(listOf(Color.White.copy(alpha = 0.9f), Color.White.copy(alpha = 0.4f))),
+                                RoundedCornerShape(18.dp)
+                            )
+                            .clickable {
+                                mostrarPerfil = !mostrarPerfil
+                                if (!mostrarPerfil) perfilRuta = "perfil"
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.editar_usuario),
+                            contentDescription = "Perfil",
+                            modifier = Modifier.size(26.dp),
+                            colorFilter = ColorFilter.tint(
+                                if (mostrarPerfil) Color(0xFF6EC6FF) else Color.White
+                            )
+                        )
+                    }
+
+                    OverflowMenu()
                 }
             }
         }
@@ -222,41 +228,11 @@ fun HomeScreen(
                             modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            item {
-                                GlassCard(
-                                    title = "🌍 Consejo sostenible",
-                                    text = consejoActual,
-                                    isClickable = false
-                                )
-                            }
-                            item {
-                                GlassCard(
-                                    title = "🍎 Fruta del día",
-                                    text = "La manzana es rica en fibra y antioxidantes.",
-                                    isClickable = false
-                                )
-                            }
-                            item {
-                                GlassCard(
-                                    title = "🥦 Verdura recomendada",
-                                    text = "El brócoli fortalece el sistema inmunológico.",
-                                    isClickable = false
-                                )
-                            }
-                            item {
-                                GlassCard(
-                                    title = "💪 Beneficio nutricional",
-                                    text = "Las frutas cítricas aportan vitamina C.",
-                                    isClickable = false
-                                )
-                            }
-                            item {
-                                GlassCard(
-                                    title = "🧊 Tip de almacenamiento",
-                                    text = "Guarda las verduras de hoja en recipientes herméticos.",
-                                    isClickable = false
-                                )
-                            }
+                            item { GlassCard(title = "🌍 Consejo sostenible", text = consejoActual) }
+                            item { GlassCard(title = "🍎 Fruta del día", text = "La manzana es rica en fibra y antioxidantes.") }
+                            item { GlassCard(title = "🥦 Verdura recomendada", text = "El brócoli fortalece el sistema inmunológico.") }
+                            item { GlassCard(title = "💪 Beneficio nutricional", text = "Las frutas cítricas aportan vitamina C.") }
+                            item { GlassCard(title = "🧊 Tip de almacenamiento", text = "Guarda las verduras de hoja en recipientes herméticos.") }
                             item {
                                 GlassCard(
                                     title = "🍽 Receta del día",
@@ -267,18 +243,13 @@ fun HomeScreen(
                                 if (recetaDesplegada) {
                                     RecetaDetalleCard(
                                         nombreReceta = "Ensalada de temporada",
-                                        preparacion = "1. Lava bien los vegetales\n" +
-                                                "2. Corta el tomate y aguacate en cubos\n" +
-                                                "3. Mezcla con hojas verdes\n" +
-                                                "4. Aliña con jugo de limón, aceite y sal\n" +
-                                                "5. ¡Disfruta tu ensalada fresca!"
+                                        preparacion = "1. Lava bien los vegetales\n2. Corta el tomate y aguacate en cubos\n3. Mezcla con hojas verdes\n4. Aliña con jugo de limón, aceite y sal\n5. ¡Disfruta tu ensalada fresca!"
                                     )
                                 }
                             }
                         }
                     }
                     1 -> TemporadaScreen(productos = productosViewModel.productos)
-                    // 🔥 PASAMOS EL MISMO VM A LAS PANTALLAS
                     2 -> BuscarScreen(favoritosViewModel = favoritosViewModel, productosViewModel = productosViewModel)
                     3 -> FavoritosScreen(favoritosViewModel = favoritosViewModel)
                     4 -> BeneficiosScreen()
@@ -290,7 +261,7 @@ fun HomeScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter)
+                .align(Alignment.BottomCenter)    // ✅ funciona porque está dentro del Box principal
                 .padding(start = 12.dp, end = 12.dp, bottom = 24.dp),
             contentAlignment = Alignment.BottomCenter
         ) {
@@ -303,10 +274,11 @@ fun HomeScreen(
                 },
                 items = items
             )
-
         }
-    }
-}
+
+    } // ✅ cierre del Box principal
+}     // ✅ cierre de HomeScreen
+
 
 // ... El resto de tus componentes (RecetaDetalleCard, GlassCard, etc.) se mantienen igual ...
 
