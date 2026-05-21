@@ -1,2 +1,2 @@
-# FreshSeason-Parcial-1er-corte-
-Primera version de la app terminada para el primer parcial 
+# FreshSeason
+ FreshSeason es una app móvil enfocada en promover el consumo saludable mediante la visualización de frutas y verduras de temporada.
